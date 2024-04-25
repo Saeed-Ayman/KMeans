@@ -1,20 +1,6 @@
 #include "KMeans.h"
+#include "Distance.h"
 
-static double Euclidean(std::vector<double> point1, std::vector<double> point2) {
-	double distance = 0.0;
-	for (int i = 0; i < point1.size(); ++i) {
-		distance += pow(point1[i] - point2[i], 2);
-	}
-	return sqrt(distance);
-}
-
-static double Manhatin(std::vector<double> point1, std::vector<double> point2) {
-	double distance = 0.0;
-	for (int i = 0; i < point1.size(); ++i) {
-		distance += abs(point1[i] - point2[i]);
-	}
-	return distance;
-}
 
 void run(double(*fun)(std::vector<double> point1, std::vector<double> point2)) {
 	auto km = KMeans(fun);
@@ -55,10 +41,10 @@ void run(double(*fun)(std::vector<double> point1, std::vector<double> point2)) {
 
 int main() {
 	std::cout << "Euclidean: " << std::endl;
-	run(Euclidean);
+	run(Distance::Euclidean);
 
 	std::cout << std::endl << "-------------------------------" << std::endl;
 
 	std::cout << "Manhatin: " << std::endl;
-	run(Manhatin);
+	run(Distance::Manhatin);
 }
