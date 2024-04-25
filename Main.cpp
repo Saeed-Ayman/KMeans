@@ -1,50 +1,63 @@
 #include "KMeans.h"
 #include "Distance.h"
+#include "CSV.h"
+#include <exception>
 
 
-void run(double(*fun)(std::vector<double> point1, std::vector<double> point2)) {
-	auto km = KMeans(fun);
-
-	PointsArray data = { {1, 1}, {2, 1}, {4, 3}, {5, 4} };
+void run(DistanceFun fun, PointsArray data) {
+	auto km = KMeans(fun, 10);
 
 	std::vector<int> cluster_assignments = km.fitPredict(data);
 
 	for (int i = 0; i < data.size(); i++) {
-		std::cout << "Point " << i + 1 << ": {";
-
-		for (int j = 0; j < data[i].size(); j++) {
-			if (j != 0) std::cout << ", ";
-
-			std::cout << data[i][j];
-		}
-
-		std::cout << "} is cluster: " << cluster_assignments[i] << std::endl;
+		std::cout << "Point " << i + 1 << ": " << data[i] << " is cluster : " << cluster_assignments[i] << std::endl;
 	}
 	std::cout << std::endl;
 
-
 	PointsArray centroids = km.getCentroids();
+	std::vector<int> count = km.getPointsCountAroundCentroids();
 
 	std::cout << "Centroids:" << std::endl;
 
-	for (Point centroid : centroids) {
-		std::cout << "\t{";
-
-		for (int i = 0; i < centroid.size(); i++) {
-			if (i != 0) std::cout << ", ";
-			std::cout << centroid[i];
-		}
-
-		std::cout << "}" << std::endl;
+	for (int i = 0; i < centroids.size(); i++) {
+		std::cout << "\t" << centroids[i] << " number of points nearest to it " << count[i] << std::endl;
 	}
 }
 
 int main() {
-	std::cout << "Euclidean: " << std::endl;
-	run(Distance::Euclidean);
+	try {
+		//auto csv = CSV("Resources/testData.csv");
+		//auto csv = CSV("non_exists_route");
+		auto csv = CSV("Resources/sample2d.csv");
+		
+		/*for (const auto& s : csv.headers())
+			std::cout << s << "\t";
 
-	std::cout << std::endl << "-------------------------------" << std::endl;
+		std::cout << std::endl;*/
 
-	std::cout << "Manhatin: " << std::endl;
-	run(Distance::Manhatin);
+		PointsArray data;
+
+		for (std::vector<double> row : csv.data()) {
+			/*for (const auto& element : row) {
+				std::cout << element << "\t\t";
+			}
+
+			std::cout << std::endl;*/
+
+			data.push_back(row);
+		}
+
+		std::cout << std::endl << "-------------------------------" << std::endl;
+
+		std::cout << "Euclidean: " << std::endl;
+		run(Distance::Euclidean, data);
+
+		std::cout << std::endl << "-------------------------------" << std::endl;
+
+		std::cout << "Manhatin: " << std::endl;
+		run(Distance::Manhatin, data);
+	}
+	catch (std::exception e) {
+		std::cout << e.what();
+	}
 }

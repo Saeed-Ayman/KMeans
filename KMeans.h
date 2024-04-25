@@ -1,14 +1,15 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include "Point.h"
 
-typedef std::vector<double> Point;
 typedef std::vector<Point> PointsArray;
+using DistanceFun = double(*)(Point, Point);
 
 class KMeans
 {
 public:
-    KMeans(double(*distance_fun)(Point, Point), int n_clusters = 2, int max_iteration = 100000)
+    KMeans(DistanceFun distance_fun, int n_clusters = 2, int max_iteration = 100000)
         : n_clusters(n_clusters), distance_fun(distance_fun), max_iteration(max_iteration) {}
 
 
@@ -30,12 +31,17 @@ public:
     PointsArray getCentroids() {
         return centroids;
     }
+
+    std::vector<int> getPointsCountAroundCentroids() {
+        return cluster_counts;
+    }
 private:
     int n_clusters;
     PointsArray centroids;
-    double(*distance_fun)(Point, Point);
+    DistanceFun distance_fun;
     int max_iteration;
     PointsArray points;
+    std::vector<int> cluster_counts;
 
     void setRandomCentroids() {
         const int size = (int)points.size();
@@ -85,14 +91,14 @@ private:
         int n_row = (int)points.size();
         int n_col = (int)points[0].size();
 
-        std::vector<int> clusterCounts(n_clusters, 0);
+        cluster_counts = std::vector<int>(n_clusters, 0);
         centroids = PointsArray(n_clusters, Point(n_col, 0.0));
 
         // get summation has same clusters and count of them
         for (int i = 0; i < n_row; ++i) {
             int clusterIndex = clusterAssignments[i];
 
-            clusterCounts[clusterIndex]++;
+            cluster_counts[clusterIndex]++;
 
             for (int j = 0; j < n_col; ++j) {
                 centroids[clusterIndex][j] += points[i][j];
@@ -101,10 +107,10 @@ private:
 
         // get average
         for (int i = 0; i < n_clusters; ++i) {
-            if (clusterCounts[i] == 0) continue;
+            if (cluster_counts[i] == 0) continue;
 
             for (int j = 0; j < n_col; ++j) {
-                centroids[i][j] /= clusterCounts[i];
+                centroids[i][j] /= cluster_counts[i];
             }
         }
 
